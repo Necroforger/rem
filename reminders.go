@@ -21,28 +21,21 @@ var (
 	clearFlag = flag.Bool("c", false, "clear reminders")
 	listFlag  = flag.Bool("l", false, "list all reminders")
 	helpFlag  = flag.Bool("h", false, "help")
+	pathFlag  = flag.String("p", "", "path of reminder json file")
 )
 
 var (
 	path = os.Getenv("GOPATH")
 )
 
-func checkFile() {
-	if _, err := os.Stat(path + "/reminders.json"); os.IsNotExist(err) {
-		os.Create(path + "/reminders.json")
-	}
-}
-
 func newReminder() {
-	checkFile()
-
 	var text string
 
-	file, err := os.OpenFile(path+"/reminders.json", os.O_RDWR|os.O_APPEND, os.ModePerm)
+	// Attempt to open the reminders file in write only mode. If it does not exist, create it.
+	file, err := os.OpenFile(path+"/reminders.json", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer file.Close()
 
 	fmt.Print("Description: ")
@@ -52,13 +45,10 @@ func newReminder() {
 		text = scanner.Text()
 	}
 
-	reminder := &Name{time.Now().Unix(), text}
-	newReminder, err := json.Marshal(&reminder)
+	err = json.NewEncoder(file).Encode(Name{time.Now().Unix(), text})
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	file.Write(newReminder)
 }
 
 func removeReminders() {
@@ -98,6 +88,10 @@ func main() {
 		flag.PrintDefaults()
 	}
 
+	if *pathFlag != "" {
+		path = *pathFlag
+	}
+
 	if *newFlag {
 		newReminder()
 	}
@@ -116,5 +110,4 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-
 }
