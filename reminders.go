@@ -31,8 +31,8 @@ var (
 func newReminder() {
 	var text string
 
-	// Attempt to open the reminders file in read only mode. If it does not exist, create it.
-	file, err := os.OpenFile(path+"/reminders.json", os.O_RDONLY|os.O_APPEND|os.O_CREATE, 0666)
+	// Attempt to open the reminders file in write only mode. If it does not exist, create it.
+	file, err := os.OpenFile(path+"/reminders.json", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
